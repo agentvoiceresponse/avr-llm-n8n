@@ -129,8 +129,13 @@ docker build -t avr-llm-n8n .
 docker run --env-file .env -p 6016:6016 avr-llm-n8n
 ```
 
-## A step-by-step guide to creating an AI voicebot with n8n and avr
+## More Details & Documentation:
 
+For comprehensive guides on using AVR with N8N, including:
+- **Setup Tutorials**: Step-by-step configuration guides
+- **Workflow Examples**: Pre-built conversation flows
+
+Visit our detailed documentation: **[AVR + N8N Integration Guide](https://wiki.agentvoiceresponse.com/e/en/using-avr-with-n8n)**
 
 
 ## Support & Community
