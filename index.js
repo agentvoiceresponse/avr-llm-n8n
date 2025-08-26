@@ -1,0 +1,73 @@
+/**
+ * index.js
+ * Entry point for the N8N LLM streaming application.
+ * This server handles real-time streaming of LLM responses to the client.      
+ *
+ * @author Agent Voice Response <info@agentvoiceresponse.com>
+ * @see https://www.agentvoiceresponse.com
+ */
+const express = require('express');
+const axios = require('axios');
+
+require('dotenv').config();
+
+const app = express();
+
+app.use(express.json());
+
+/**
+ * Handles a prompt stream from the client and uses the N8N API to generate
+ * a response. The response is sent back to the client as a JSON object.
+ *
+ * @param {Object} req - The Express request object
+ * @param {Object} res - The Express response object
+ */
+const handlePromptStream = async (req, res) => {
+    const { uuid, message } = req.body;
+
+    if (!uuid) {
+        return res.status(400).json({ message: 'UUID is required' });
+    }
+
+    if (!message) {
+        return res.status(400).json({ message: 'Message is required' });
+    }
+
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    try {
+        const publicChatUrl = process.env.PUBLIC_CHAT_URL;
+        const requestConfig = {
+            method: 'post',
+            url: publicChatUrl,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            data: {
+                sessionId: uuid,
+                chatInput: message,
+            },
+        };
+
+        console.log("N8N Configuration", requestConfig)
+        console.log("Message", message);
+
+        const response = await axios(requestConfig);
+        const responseData = response.data;
+        console.log("Response", responseData);
+        res.write(JSON.stringify({ type: 'text', content: responseData.output }));
+        res.end();
+    } catch (error) {
+        console.error('Error calling N8N API:', error.message);
+        res.status(500).json({ message: 'Error communicating with N8N' });
+    }
+}
+
+app.post('/prompt-stream', handlePromptStream);
+
+const port = process.env.PORT || 6016;
+app.listen(port, () => {
+    console.log(`N8N LLM streaming listening on port ${port}`);
+});
