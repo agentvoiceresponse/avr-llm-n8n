@@ -143,11 +143,14 @@ Visit our detailed documentation: **[AVR + N8N Integration Guide](https://wiki.a
 *   **GitHub:** [https://github.com/agentvoiceresponse](https://github.com/agentvoiceresponse) - Report issues, contribute code.
 *   **Discord:** [https://discord.gg/DFTU69Hg74](https://discord.gg/DFTU69Hg74) - Join the community discussion.
 *   **Docker Hub:** [https://hub.docker.com/u/agentvoiceresponse](https://hub.docker.com/u/agentvoiceresponse) - Find Docker images.
+*   **NPM:** [https://www.npmjs.com/~agentvoiceresponse](https://www.npmjs.com/~agentvoiceresponse) - Browse our packages.
 *   **Wiki:** [https://wiki.agentvoiceresponse.com/en/home](https://wiki.agentvoiceresponse.com/en/home) - Project documentation and guides.
 
 ## Support AVR
 
-AVR is free and open-source. If you find it valuable, consider supporting its development:
+AVR is free and open-source.
+Any support is entirely voluntary and intended as a personal gesture of appreciation.
+Donations do not provide access to features, services, or special benefits, and the project remains fully available regardless of donations.
 
 <a href="https://ko-fi.com/agentvoiceresponse" target="_blank"><img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Support us on Ko-fi"></a>
 

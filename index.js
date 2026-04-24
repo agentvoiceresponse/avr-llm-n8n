@@ -49,6 +49,7 @@ const handlePromptStream = async (req, res) => {
                 sessionId: uuid,
                 chatInput: message,
             },
+            responseType: 'stream',
         };
 
         console.log("N8N Configuration", requestConfig)
@@ -56,9 +57,36 @@ const handlePromptStream = async (req, res) => {
 
         const response = await axios(requestConfig);
         const responseData = response.data;
-        console.log("Response", responseData);
-        res.write(JSON.stringify({ type: 'text', content: responseData.output }));
-        res.end();
+
+        responseData.on('data', (chunk) => {
+            const data = chunk.toString();
+            try {
+                const parsed = JSON.parse(data);
+                switch (parsed.type) {
+                    case 'begin':
+                        console.log("Start streaming");
+                        break;
+                    case 'item':
+                        res.write(JSON.stringify({ type: 'text', content: parsed.content }));
+                        break;
+                    case 'end':
+                        console.log("End streaming");
+                        res.end();
+                        break;
+                    default:
+                        console.log("Unknown type", parsed.type);
+                        break;
+                }
+            } catch (error) {
+                console.error("Error parsing JSON", error);
+                res.end();
+            }
+        });
+
+        responseData.on('end', () => {
+            console.log("Response end");
+            res.end();
+        });
     } catch (error) {
         console.error('Error calling N8N API:', error.message);
         res.status(500).json({ message: 'Error communicating with N8N' });
