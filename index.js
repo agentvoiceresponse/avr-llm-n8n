@@ -57,33 +57,58 @@ const handlePromptStream = async (req, res) => {
 
         const response = await axios(requestConfig);
         const responseData = response.data;
+        let streamBuffer = '';
+
+        const handleParsedEvent = (parsed) => {
+            switch (parsed.type) {
+                case 'begin':
+                    console.log("Start streaming");
+                    break;
+                case 'item':
+                    console.log(parsed.content);
+                    res.write(JSON.stringify({ type: 'text', content: parsed.content }));
+                    break;
+                case 'end':
+                    console.log("End streaming");
+                    res.end();
+                    break;
+                default:
+                    console.log("Unknown type", parsed.type);
+                    break;
+            }
+        };
 
         responseData.on('data', (chunk) => {
             const data = chunk.toString();
-            try {
-                const parsed = JSON.parse(data);
-                switch (parsed.type) {
-                    case 'begin':
-                        console.log("Start streaming");
-                        break;
-                    case 'item':
-                        res.write(JSON.stringify({ type: 'text', content: parsed.content }));
-                        break;
-                    case 'end':
-                        console.log("End streaming");
-                        res.end();
-                        break;
-                    default:
-                        console.log("Unknown type", parsed.type);
-                        break;
-                }
-            } catch (error) {
-                console.error("Error parsing JSON", error);
-                res.end();
-            }
+            streamBuffer += data;
+
+            // N8N may send newline-delimited JSON, sometimes split across chunks.
+            const lines = streamBuffer.replace(/\r\n/g, '\n').split('\n');
+            streamBuffer = lines.pop() || '';
+
+            lines
+                .map((line) => line.trim())
+                .filter(Boolean)
+                .forEach((line) => {
+                    try {
+                        const parsed = JSON.parse(line);
+                        handleParsedEvent(parsed);
+                    } catch (error) {
+                        console.error("Error parsing JSON line", error, line);
+                    }
+                });
         });
 
         responseData.on('end', () => {
+            const finalLine = streamBuffer.trim();
+            if (finalLine) {
+                try {
+                    const parsed = JSON.parse(finalLine);
+                    handleParsedEvent(parsed);
+                } catch (error) {
+                    console.error("Error parsing final JSON line", error, finalLine);
+                }
+            }
             console.log("Response end");
             res.end();
         });
